@@ -1,47 +1,64 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { compose } from 'recompose';
-
 import withAuthorization from '../Session/withAuthorization';
 import { db } from '../../firebase';
 
-class HomePage extends Component {
-  componentDidMount() {
-    const { userStore } = this.props;
 
-    db.onceGetUsers().then(snapshot =>
-      userStore.setUsers(snapshot.val())
-    );
+class HomePage extends Component {
+
+  componentDidMount() {
+    const { userStore, sessionStore, dataStore } = this.props;
+
+    db.getUser(sessionStore.authUser) // get user info from firestore
+      .then(userDoc => {
+        const {company} = userDoc.data() // get company ID
+        return Promise.all([userDoc, db.getEvents(company)]) //get company document containing all subcollections
+      })
+      .then(results => {
+        const userData = results[0].data()
+        const eventsCol = results[1]
+        userStore.setUser(userData)
+        dataStore.setEvents(eventsCol)
+      })
   }
 
   render() {
-    const { users } = this.props.userStore;
+    const { user } = this.props.userStore;
+    const { eventsCol } = this.props.dataStore;
 
     return (
       <div>
         <h1>Home</h1>
         <p>The Home Page is accessible by every signed in user.</p>
 
-        { !!users && <UserList users={users} /> }
+        { user && eventsCol.empty === false ? <EventsList user={user} eventsCol={eventsCol} /> : 'Loading Events...' }
       </div>
     );
   }
 }
 
-const UserList = ({ users }) =>
-  <div>
-    <h2>List of Usernames of Users</h2>
-    <p>(Saved on Sign Up in Firebase Database)</p>
+const EventsList = ({ user, eventsCol }) => {
+  // console.log('user', user);
+  console.log('events', eventsCol.empty);
+  return (<div>
+    <h2>List of Events for this user</h2>
+    <p>(Saved in Firestore Database)</p>
 
-    {Object.keys(users).map(key =>
-      <div key={key}>{users[key].username}</div>
-    )}
-  </div>
+    {eventsCol.docs.map(eventDoc =>{
+      console.log(eventDoc.data());
+      return <div key={eventDoc.id}>
+        title: {eventDoc.data().title}
+      </div>
+    })}
 
-const authCondition = (authUser) => !!authUser;
+  </div>)
+}
+
+const condition = (authUser) => !!authUser
 
 export default compose(
-  withAuthorization(authCondition),
-  inject('userStore'),
+  withAuthorization(condition),
+  inject('userStore', 'sessionStore', 'dataStore'),
   observer
 )(HomePage);

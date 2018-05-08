@@ -1,21 +1,23 @@
 import * as firebase from 'firebase';
+import 'firebase/firestore'
+import {initFirestorter, Collection} from 'firestorter';
 
 const prodConfig = {
-  apiKey: YOUR_API_KEY,
-  authDomain: YOUR_AUTH_DOMAIN,
-  databaseURL: YOUR_DATABASE_URL,
-  projectId: YOUR_PROJECT_ID,
-  storageBucket: '',
-  messagingSenderId: YOUR_MESSAGING_SENDER_ID,
+  apiKey: "AIzaSyDsoxi8jDn5Nh2-rJBxrOQPmZQQJkCzqeM",
+  authDomain: "em-pro-audio-88747.firebaseapp.com",
+  databaseURL: "https://em-pro-audio-88747.firebaseio.com",
+  projectId: "em-pro-audio",
+  storageBucket: "em-pro-audio.appspot.com",
+  messagingSenderId: "484148208454"
 };
 
 const devConfig = {
-  apiKey: YOUR_API_KEY,
-  authDomain: YOUR_AUTH_DOMAIN,
-  databaseURL: YOUR_DATABASE_URL,
-  projectId: YOUR_PROJECT_ID,
-  storageBucket: '',
-  messagingSenderId: YOUR_MESSAGING_SENDER_ID,
+  apiKey: "AIzaSyDsoxi8jDn5Nh2-rJBxrOQPmZQQJkCzqeM",
+  authDomain: "em-pro-audio-88747.firebaseapp.com",
+  databaseURL: "https://em-pro-audio-88747.firebaseio.com",
+  projectId: "em-pro-audio",
+  storageBucket: "em-pro-audio.appspot.com",
+  messagingSenderId: "484148208454"
 };
 
 const config = process.env.NODE_ENV === 'production'
@@ -25,8 +27,8 @@ const config = process.env.NODE_ENV === 'production'
 if (!firebase.apps.length) {
   firebase.initializeApp(config);
 }
-
-const db = firebase.database();
+// initFirestorter({firebase: firebase});
+const db = firebase.firestore();
 const auth = firebase.auth();
 
 export {
