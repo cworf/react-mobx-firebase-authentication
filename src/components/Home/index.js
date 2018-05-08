@@ -13,42 +13,42 @@ class HomePage extends Component {
     db.getUser(sessionStore.authUser) // get user info from firestore
       .then(userDoc => {
         const {company} = userDoc.data() // get company ID
-        return Promise.all([userDoc, db.getEvents(company)]) //get company document containing all subcollections
+        return Promise.all([userDoc, db.getData(company)]) //get company document containing all subcollections
       })
       .then(results => {
         const userData = results[0].data()
-        const eventsCol = results[1]
+        const companyData = results[1] //array of all promised firestore CollectionQueries
         userStore.setUser(userData)
-        dataStore.setEvents(eventsCol)
+        dataStore.setData(companyData)
       })
   }
 
   render() {
     const { user } = this.props.userStore;
-    const { eventsCol } = this.props.dataStore;
+    const { inventory } = this.props.dataStore;
 
     return (
       <div>
         <h1>Home</h1>
         <p>The Home Page is accessible by every signed in user.</p>
 
-        { user && eventsCol.empty === false ? <EventsList user={user} eventsCol={eventsCol} /> : 'Loading Events...' }
+        { !(user && inventory.empty === false)
+            ? 'Loading Inventory...'
+            : <EventsList user={user} inventory={inventory} /> }
       </div>
     );
   }
 }
 
-const EventsList = ({ user, eventsCol }) => {
+const EventsList = ({ user, inventory }) => {
   // console.log('user', user);
-  console.log('events', eventsCol.empty);
   return (<div>
-    <h2>List of Events for this user</h2>
+    <h2>List of Inventory for this user</h2>
     <p>(Saved in Firestore Database)</p>
 
-    {eventsCol.docs.map(eventDoc =>{
-      console.log(eventDoc.data());
-      return <div key={eventDoc.id}>
-        title: {eventDoc.data().title}
+    {inventory.docs.map(item =>{
+      return <div key={item.id}>
+        ---Item: {item.data().name}
       </div>
     })}
 
